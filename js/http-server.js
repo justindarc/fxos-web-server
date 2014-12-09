@@ -27,7 +27,9 @@ HTTPServer.prototype.timeout = DEFAULT_TIMEOUT;
 HTTPServer.prototype.start = function() {
   console.log('Starting HTTP server on port ' + this.port);
 
-  var socket = navigator.mozTCPSocket.listen(this.port);
+  var socket = navigator.mozTCPSocket.listen(this.port, {
+    binaryType: 'string' // 'arraybuffer'
+  });
 
   socket.onconnect = (connectEvent) => {
     connectEvent.ondata = (dataEvent) => {
@@ -62,6 +64,10 @@ HTTPServer.prototype.stop = function() {
 };
 
 function parseRequestData(requestData) {
+  if (requestData instanceof ArrayBuffer) {
+    requestData = arrayBufferToString(requestData);
+  }
+
   var lines = (requestData || '').split('\r\n');
   var start = lines.shift().split(' ');
   
@@ -86,6 +92,10 @@ function parseRequestData(requestData) {
   request.headers = headers;
 
   return request;
+}
+
+function arrayBufferToString(arrayBuffer) {
+  return String.fromCharCode.apply(null, new Uint8Array(arrayBuffer));
 }
 
 return HTTPServer;

@@ -2,6 +2,17 @@ var httpServer = new HTTPServer(8080);
 
 httpServer.addEventListener('request', function(evt) {
   var request = evt.request;
+  var response = evt.response;
+  
+  console.log(request);
+
+  if (request.path === '/image.jpg') {
+    response.headers['Content-Type'] = 'image/jpeg';
+    response.sendFile('/img/image.jpg');
+
+    return;
+  }
+
   var body =
 `<!DOCTYPE html>
 <html>
@@ -12,12 +23,11 @@ httpServer.addEventListener('request', function(evt) {
   <h1>Hello World!</h1>
   <h3>If you can read this, the Firefox OS Web Server is operational!</h3>
   <p>The path you requested is: ${request.path}</p>
+  <p>To see something really scary, <a href="/image.jpg">click here</a> :-)</p>
 </body>
 </html>`
 
-  console.log(evt);
-
-  evt.response.send(body);
+  response.send(body);
 });
 
 window.addEventListener('load', function() {
