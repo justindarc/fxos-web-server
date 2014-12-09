@@ -22,10 +22,8 @@ HTTPResponse.prototype.send = function(body, status) {
 };
 
 function createResponseHeader(status, headers) {
-  status  = status  || 200;
-  headers = headers || {};
-
-  var header = 'HTTP/1.1 ' + status + ' OK\r\n';
+  var statusName = HTTPStatus[status] || '';
+  var header = 'HTTP/1.1 ' + status + ' ' + statusName + '\r\n';
 
   headers['Content-Type'] = headers['Content-Type'] || 'text/html';
   headers['Connection']   = headers['Connection']   || 'close';
