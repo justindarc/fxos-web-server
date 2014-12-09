@@ -65,7 +65,7 @@ HTTPServer.prototype.stop = function() {
 
 function parseRequestData(requestData) {
   if (requestData instanceof ArrayBuffer) {
-    requestData = arrayBufferToString(requestData);
+    requestData = BinaryUtils.arrayBufferToString(requestData);
   }
 
   var lines = (requestData || '').split('\r\n');
@@ -92,10 +92,6 @@ function parseRequestData(requestData) {
   request.headers = headers;
 
   return request;
-}
-
-function arrayBufferToString(arrayBuffer) {
-  return String.fromCharCode.apply(null, new Uint8Array(arrayBuffer));
 }
 
 return HTTPServer;
