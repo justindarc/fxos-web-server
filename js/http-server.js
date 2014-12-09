@@ -1,4 +1,65 @@
+/*jshint esnext:true*/
+/*exported HTTPServer*/
+'use strict';
+
 window.HTTPServer = (function() {
+
+const DEFAULT_PORT = 8080;
+const DEFAULT_TIMEOUT = 20000;
+
+function HTTPServer(port, options) {
+  this.port = port || DEFAULT_PORT;
+
+  options = options || {};
+  for (var option in options) {
+    this[option] = options[option];
+  }
+
+  this.running = false;
+}
+
+Listenable(HTTPServer.prototype);
+
+HTTPServer.prototype.constructor = HTTPServer;
+
+HTTPServer.prototype.timeout = DEFAULT_TIMEOUT;
+
+HTTPServer.prototype.start = function() {
+  console.log('Starting HTTP server on port ' + this.port);
+
+  var socket = navigator.mozTCPSocket.listen(this.port);
+
+  socket.onconnect = (connectEvent) => {
+    connectEvent.ondata = (dataEvent) => {
+      var request = parseRequestData(dataEvent.data);
+      var response = new HTTPResponse(connectEvent);
+
+      var responseTimeout = setTimeout(() => {
+        response.send(null, 500);
+      }, this.timeout);
+
+      response.addEventListener('send', () => {
+        clearTimeout(responseTimeout);
+      });
+
+      this.emit('request', {
+        request: request,
+        response: response
+      });
+    };
+  };
+
+  this.socket = socket;
+  this.running = true;
+};
+
+HTTPServer.prototype.stop = function() {
+  console.log('Shutting down HTTP server on port ' + this.port);
+
+  this.socket.close();
+
+  this.running = false;
+};
 
 function parseRequestData(requestData) {
   var lines = (requestData || '').split('\r\n');
@@ -10,7 +71,7 @@ function parseRequestData(requestData) {
   };
 
   var headers = {};
-  lines.forEach(function(line) {
+  lines.forEach((line) => {
     var parts = line.split(': ');
     if (parts.length !== 2) {
       return;
@@ -26,78 +87,6 @@ function parseRequestData(requestData) {
 
   return request;
 }
-
-function createResponseHeader(status, headers) {
-  status  = status || 200;
-  headers = headers || {};
-
-  var header = 'HTTP/1.1 ' + status + ' OK\r\n';
-
-  headers['Content-Type'] = headers['Content-Type'] || 'text/html';
-  headers['Connection']   = headers['Connection']   || 'close';
-
-  for (var name in headers) {
-    header += name + ': ' + headers[name] + '\r\n';
-  }
-
-  return header;
-}
-
-function createResponse(body, status, headers) {
-  body    = body    || '';
-  status  = status  || 200;
-  headers = headers || {};
-
-  headers['Content-Length'] = body.length;
-
-  return createResponseHeader(status, headers) + '\r\n' + body;
-}
-
-function HTTPServer(port) {
-  this.port = port;
-  this.running = false;
-}
-
-HTTPServer.prototype.constructor = HTTPServer;
-
-HTTPServer.prototype.start = function() {
-  console.log('Starting HTTP server on port ' + this.port);
-
-  this.socket = navigator.mozTCPSocket.listen(this.port);
-  console.log(this.socket);
-  this.socket.onconnect = function(connectEvent) {
-    connectEvent.ondata = function(dataEvent) {
-      var request = parseRequestData(dataEvent.data);
-      console.log(request);
-
-      var body =
-`<!DOCTYPE html>
-<html>
-<head>
-  <title>Firefox OS Web Server</title>
-</head>
-<body>
-  <h1>Hello World!</h1>
-  <h3>If you can read this, the Firefox OS Web Server is operational!</h3>
-  <p>The path you requested is: ${request.path}</p>
-</body>
-</html>`
-
-      var response = createResponse(body);
-      connectEvent.send(response);
-    };
-  };
-
-  this.running = true;
-};
-
-HTTPServer.prototype.stop = function() {
-  console.log('Shutting down HTTP server on port ' + this.port);
-
-  this.socket.close();
-
-  this.running = false;
-};
 
 return HTTPServer;
 
