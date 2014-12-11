@@ -2,7 +2,7 @@
 /*exported HTTPStatus*/
 'use strict';
 
-window.HTTPStatus = (function() {
+module.exports = window.HTTPStatus = (function() {
 
 const CRLF = '\r\n';
 

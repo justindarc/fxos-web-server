@@ -2,7 +2,10 @@
 /*exported HTTPRequest*/
 'use strict';
 
-window.HTTPRequest = (function() {
+module.exports = window.HTTPRequest = (function() {
+
+var Listenable  = require('./listenable');
+var BinaryUtils = require('./binary-utils');
 
 const CRLF = '\r\n';
 

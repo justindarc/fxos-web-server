@@ -2,7 +2,11 @@
 /*exported HTTPResponse*/
 'use strict';
 
-window.HTTPResponse = (function() {
+module.exports = window.HTTPResponse = (function() {
+
+var Listenable  = require('./listenable');
+var BinaryUtils = require('./binary-utils');
+var HTTPStatus  = require('./http-status');
 
 const CRLF = '\r\n';
 

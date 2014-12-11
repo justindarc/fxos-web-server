@@ -1,7 +1,7 @@
 {
   "version": "0.0.1",
-  "name": "Firefox OS Web Server",
-  "description": "A basic HTTP server for Firefox OS",
+  "name": "Simple Web Server",
+  "description": "A simple HTTP server for Firefox OS",
   "launch_path": "/index.html",
   "icons": {
     "16": "/img/icons/icon16x16.png",

@@ -57,19 +57,11 @@ window.addEventListener('load', function() {
   var stop   = document.getElementById('stop');
 
   start.addEventListener('click', function() {
-    if (httpServer.running) {
-      return;
-    }
-
     httpServer.start();
     status.textContent = 'Running';
   });
 
   stop.addEventListener('click', function() {
-    if (!httpServer.running) {
-      return;
-    }
-
     httpServer.stop();
     status.textContent = 'Stopped';
   });

@@ -2,7 +2,7 @@
 /*exported BinaryUtils*/
 'use strict';
 
-window.BinaryUtils = (function() {
+module.exports = window.BinaryUtils = (function() {
 
 var BinaryUtils = {
   stringToArrayBuffer: function(string) {

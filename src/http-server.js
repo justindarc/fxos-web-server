@@ -2,7 +2,11 @@
 /*exported HTTPServer*/
 'use strict';
 
-window.HTTPServer = (function() {
+module.exports = window.HTTPServer = (function() {
+
+var Listenable   = require('./listenable');
+var HTTPRequest  = require('./http-request');
+var HTTPResponse = require('./http-response');
 
 const DEFAULT_PORT = 8080;
 const DEFAULT_TIMEOUT = 20000;
@@ -29,6 +33,10 @@ HTTPServer.prototype.constructor = HTTPServer;
 HTTPServer.prototype.timeout = DEFAULT_TIMEOUT;
 
 HTTPServer.prototype.start = function() {
+  if (this.running) {
+    return;
+  }
+
   console.log('Starting HTTP server on port ' + this.port);
 
   var socket = navigator.mozTCPSocket.listen(this.port, {
@@ -57,6 +65,10 @@ HTTPServer.prototype.start = function() {
 };
 
 HTTPServer.prototype.stop = function() {
+  if (!this.running) {
+    return;
+  }
+
   console.log('Shutting down HTTP server on port ' + this.port);
 
   this.socket.close();

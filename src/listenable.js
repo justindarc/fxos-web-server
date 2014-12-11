@@ -2,7 +2,7 @@
 /*exported Listenable*/
 'use strict';
 
-window.Listenable = (function() {
+module.exports = window.Listenable = (function() {
 
 function Listenable(object) {
   object.emit = function(name, data) {

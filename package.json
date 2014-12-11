@@ -1,0 +1,31 @@
+{
+  "name": "fxos-web-server",
+  "version": "0.0.1",
+  "homepage": "https://github.com/justindarc/fxos-web-server",
+  "license": "MIT",
+  "main": "dist/fxos-web-server.js",
+  "directories": {
+    "example": "examples",
+    "test": "test"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "browserify": "^7.0.0",
+    "karma": "^0.12.28",
+    "karma-firefox-launcher": "^0.1.3",
+    "karma-mocha": "^0.1.10",
+    "karma-sinon-chai": "^0.2.0"
+  },
+  "scripts": {
+    "test": "./node_modules/karma/bin/karma start test/karma.conf.js --single-run",
+    "build": "mkdir -p dist && ./node_modules/.bin/browserify src/http-server.js --outfile dist/fxos-web-server.js --standalone HTTPServer && mkdir -p example/simple/lib && cp -rf dist/fxos-web-server.js example/simple/lib/fxos-web-server.js",
+    "clean": "rm -rf dist/fxos-web-server.js && rm -rf example/lib/fxos-web-server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/justindarc/fxos-web-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/justindarc/fxos-web-server/issues"
+  }
+}
