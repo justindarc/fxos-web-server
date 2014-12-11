@@ -4,7 +4,11 @@
 
 window.HTTPStatus = (function() {
 
-var HTTPStatus = {
+const CRLF = '\r\n';
+
+var HTTPStatus = {};
+
+HTTPStatus.STATUS_CODES = {
   100: 'Continue',
   101: 'Switching Protocols',
   102: 'Processing',
@@ -53,6 +57,12 @@ var HTTPStatus = {
   504: 'Gateway Timeout',
   505: 'HTTP Version Not Supported',
   507: 'Insufficient Storage'
+};
+
+HTTPStatus.getStatusLine = function(status) {
+  var reason = HTTPStatus.STATUS_CODES[status] || 'Unknown';
+
+  return [HTTPServer.HTTP_VERSION, status, reason].join(' ') + CRLF;
 };
 
 return HTTPStatus;

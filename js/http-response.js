@@ -4,12 +4,21 @@
 
 window.HTTPResponse = (function() {
 
-function HTTPResponse(socket) {
-  this.socket = socket;
-  this.headers = {};
+const CRLF = '\r\n';
 
+function HTTPResponse(socket, timeout) {
+  this.socket  = socket;
+  this.timeout = timeout;
+
+  this.headers = {};
   this.headers['Content-Type'] = 'text/html';
   this.headers['Connection']   = 'close';
+
+  if (this.timeout) {
+    this.timeoutHandler = setTimeout(() => {
+      this.send(null, 500);
+    }, this.timeout);
+  }
 }
 
 Listenable(HTTPResponse.prototype);
@@ -23,7 +32,9 @@ HTTPResponse.prototype.send = function(body, status) {
   }
 
   this.socket.send(response);
-  this.emit('send');
+
+  clearTimeout(this.timeoutHandler);
+  this.emit('complete');
 };
 
 HTTPResponse.prototype.sendFile = function(path, status) {
@@ -39,14 +50,10 @@ HTTPResponse.prototype.sendFile = function(path, status) {
 };
 
 function createResponseHeader(status, headers) {
-  var statusName = HTTPStatus[status] || '';
-  var header = 'HTTP/1.1 ' + status + ' ' + statusName + '\r\n';
-
-  headers['Content-Type'] = headers['Content-Type'] || 'text/html';
-  headers['Connection']   = headers['Connection']   || 'close';
+  var header = HTTPStatus.getStatusLine(status);
 
   for (var name in headers) {
-    header += name + ': ' + headers[name] + '\r\n';
+    header += name + ': ' + headers[name] + CRLF;
   }
 
   return header;
@@ -59,7 +66,7 @@ function createResponse(body, status, headers) {
 
   headers['Content-Length'] = body.length;
 
-  return createResponseHeader(status, headers) + '\r\n' + body;
+  return createResponseHeader(status, headers) + CRLF + body;
 }
 
 return HTTPResponse;

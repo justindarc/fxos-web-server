@@ -7,6 +7,8 @@ window.HTTPServer = (function() {
 const DEFAULT_PORT = 8080;
 const DEFAULT_TIMEOUT = 20000;
 
+const CRLF = '\r\n';
+
 function HTTPServer(port, options) {
   this.port = port || DEFAULT_PORT;
 
@@ -17,6 +19,8 @@ function HTTPServer(port, options) {
 
   this.running = false;
 }
+
+HTTPServer.HTTP_VERSION = 'HTTP/1.1';
 
 Listenable(HTTPServer.prototype);
 
@@ -33,16 +37,13 @@ HTTPServer.prototype.start = function() {
 
   socket.onconnect = (connectEvent) => {
     connectEvent.ondata = (dataEvent) => {
-      var request = parseRequestData(dataEvent.data);
-      var response = new HTTPResponse(connectEvent);
+      var request = new HTTPRequest(dataEvent.data);
+      if (request.invalid) {
+        connectEvent.close();
+        return;
+      }
 
-      var responseTimeout = setTimeout(() => {
-        response.send(null, 500);
-      }, this.timeout);
-
-      response.addEventListener('send', () => {
-        clearTimeout(responseTimeout);
-      });
+      var response = new HTTPResponse(connectEvent, this.timeout);
 
       this.emit('request', {
         request: request,
@@ -62,37 +63,6 @@ HTTPServer.prototype.stop = function() {
 
   this.running = false;
 };
-
-function parseRequestData(requestData) {
-  if (requestData instanceof ArrayBuffer) {
-    requestData = BinaryUtils.arrayBufferToString(requestData);
-  }
-
-  var lines = (requestData || '').split('\r\n');
-  var start = lines.shift().split(' ');
-  
-  var request = {
-    method: start[0],
-    path: start[1]
-  };
-
-  var headers = {};
-  lines.forEach((line) => {
-    var parts = line.split(': ');
-    if (parts.length !== 2) {
-      return;
-    }
-
-    var name  = parts[0];
-    var value = parts[1];
-
-    headers[name] = value;
-  });
-
-  request.headers = headers;
-
-  return request;
-}
 
 return HTTPServer;
 
