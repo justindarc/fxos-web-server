@@ -1,0 +1,74 @@
+html, body {
+  margin: 0;
+  padding: 0.5rem;
+}
+
+body {
+  font-size: 1rem;
+  background: #fff;
+}
+
+h1 {
+  margin: 0 0 1rem 0;
+}
+
+p {
+  font-size: inherit;
+}
+
+button {
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li > a {
+  background-color: #eee;
+  color: #000;
+  text-decoration: none;
+  display: block;
+  margin: 0.1rem 0;
+  padding: 1rem 1.5rem 1rem 1rem;
+}
+
+li > a:after {
+  content: '>';
+  font-size: 2rem;
+  display: inline-block;
+  float: right;
+  margin: -0.5rem -1rem 0 0;
+}
+
+header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3rem;
+}
+
+header > a {
+  background-color: #eee;
+  color: #000;
+  font-size: 0.8rem;
+  text-decoration: none;
+  display: inline-block;
+  padding: 1rem;
+}
+
+iframe {
+  border: none;
+  position: absolute;
+  top: 3rem;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 3rem);
+}
+
+#remote {
+  display: none;
+}
