@@ -22,5 +22,8 @@
     "*"
   ],
   "locales": {},
-  "default_locale": "en"
+  "default_locale": "en",
+  "messages": [
+    "wifip2p-pairing-request"
+  ]
 }

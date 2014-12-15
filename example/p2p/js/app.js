@@ -37,7 +37,7 @@ window.addEventListener('load', function() {
     var request = wifiP2pManager.getPeerList();
     request.onsuccess = function() {
       var peerList = request.result;
-
+      console.log('peerList', peerList);
       peers.innerHTML = '';
 
       peerList.forEach(function(peer) {
@@ -58,6 +58,46 @@ window.addEventListener('load', function() {
     };
   }
 
+  window.getGroupOwnerNetwork = function getGroupOwnerNetwork(success, error) {
+    var groupOwner = wifiP2pManager.groupOwner;
+    console.log(groupOwner);
+
+    var request = wifiManager.getNetworks();
+    request.onsuccess = function(evt) {
+      var network = evt.target.result.find(function(network) {
+        return groupOwner.ssid === network.ssid &&
+               groupOwner.freq === network.frequency;
+      });
+
+      if (!network) {
+        error(null);
+        return;
+      }
+
+      success(network);
+    };
+    request.onerror = function(err) {
+      console.warn('Unable to get WiFi networks', err);
+      error(err);
+    };
+  };
+
+  window.connectToGroupOwner = function connectToGroupOwner() {
+    getGroupOwnerNetwork(function(network) {
+      console.log(window.ntwk = network);
+
+      var request = wifiManager.associate(network);
+      request.onsuccess = function(evt) {
+        console.log(evt);
+      };
+      request.onerror = function(err) {
+        console.warn('Unable to associate with group owner network', err);
+      };
+    }, function(error) {
+      console.warn('Unable to get group owner network', error);
+    });
+  };
+
   wifiP2pManager.addEventListener('enabled', function(evt) {
     console.log('wifiP2pManager::enabled', evt);
   });
@@ -69,15 +109,13 @@ window.addEventListener('load', function() {
   wifiP2pManager.addEventListener('statuschange', function(evt) {
     console.log('wifiP2pManager::statuschange', evt, evt.peerAddress);
 
-    var groupOwner = wifiP2pManager.groupOwner;
-    if (!groupOwner) {
+    if (!wifiP2pManager.groupOwner) {
       console.warn('No group owner available');
-      alert('No group owner available');
       return;
     }
 
-    console.log(groupOwner);
-    alert(JSON.stringify(groupOwner));
+    console.log(wifiP2pManager.groupOwner);
+    // connectToGroupOwner();
   });
 
   wifiP2pManager.addEventListener('peerinfoupdate', function(evt) {
@@ -87,7 +125,7 @@ window.addEventListener('load', function() {
   });
 
   // Set the WPS method.
-  wifiManager.wps({ method: 'pbc' });
+  // wifiManager.wps({ method: 'pbc' });
 
   // Set the device name that will be shown to nearby peers.
   var deviceName = 'P2P Web Server ' + wifiManager.macAddress;
@@ -102,7 +140,7 @@ window.addEventListener('load', function() {
   navigator.mozSetMessageHandler('wifip2p-pairing-request', function(evt) {
     var accepted = true;
     var pin = ''; // optional
-
+    console.log('wifip2p-pairing-request', evt);
     wifiP2pManager.setPairingConfirmation(accepted, pin);
   });
 
@@ -134,8 +172,16 @@ window.addEventListener('load', function() {
   });
 
   var status = document.getElementById('status');
+  var ip     = document.getElementById('ip');
+  var port   = document.getElementById('port');
   var start  = document.getElementById('start');
   var stop   = document.getElementById('stop');
+
+  IPUtils.getAddresses(function(ipAddress) {
+    ip.textContent = ip.textContent || ipAddress;
+  });
+
+  port.textContent = httpServer.port;
 
   start.addEventListener('click', function() {
     httpServer.start();

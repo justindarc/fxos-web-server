@@ -7,6 +7,7 @@ module.exports = window.HTTPServer = (function() {
 var Listenable   = require('./listenable');
 var HTTPRequest  = require('./http-request');
 var HTTPResponse = require('./http-response');
+var IPUtils      = require('./ip-utils');
 
 const DEFAULT_PORT = 8080;
 const DEFAULT_TIMEOUT = 20000;

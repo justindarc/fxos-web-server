@@ -53,8 +53,16 @@ httpServer.addEventListener('request', function(evt) {
 
 window.addEventListener('load', function() {
   var status = document.getElementById('status');
+  var ip     = document.getElementById('ip');
+  var port   = document.getElementById('port');
   var start  = document.getElementById('start');
   var stop   = document.getElementById('stop');
+
+  IPUtils.getAddresses(function(ipAddress) {
+    ip.textContent = ip.textContent || ipAddress;
+  });
+
+  port.textContent = httpServer.port;
 
   start.addEventListener('click', function() {
     httpServer.start();

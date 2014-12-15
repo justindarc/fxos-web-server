@@ -235,7 +235,7 @@ return HTTPRequest;
 
 })();
 
-},{"./binary-utils":1,"./listenable":6}],3:[function(require,module,exports){
+},{"./binary-utils":1,"./listenable":7}],3:[function(require,module,exports){
 /*jshint esnext:true*/
 /*exported HTTPResponse*/
 'use strict';
@@ -315,7 +315,7 @@ return HTTPResponse;
 
 })();
 
-},{"./binary-utils":1,"./http-status":5,"./listenable":6}],4:[function(require,module,exports){
+},{"./binary-utils":1,"./http-status":5,"./listenable":7}],4:[function(require,module,exports){
 /*jshint esnext:true*/
 /*exported HTTPServer*/
 'use strict';
@@ -325,6 +325,7 @@ module.exports = window.HTTPServer = (function() {
 var Listenable   = require('./listenable');
 var HTTPRequest  = require('./http-request');
 var HTTPResponse = require('./http-response');
+var IPUtils      = require('./ip-utils');
 
 const DEFAULT_PORT = 8080;
 const DEFAULT_TIMEOUT = 20000;
@@ -398,7 +399,7 @@ return HTTPServer;
 
 })();
 
-},{"./http-request":2,"./http-response":3,"./listenable":6}],5:[function(require,module,exports){
+},{"./http-request":2,"./http-response":3,"./ip-utils":6,"./listenable":7}],5:[function(require,module,exports){
 /*jshint esnext:true*/
 /*exported HTTPStatus*/
 'use strict';
@@ -471,6 +472,75 @@ return HTTPStatus;
 })();
 
 },{}],6:[function(require,module,exports){
+/*jshint esnext:true*/
+/*exported IPUtils*/
+'use strict';
+
+module.exports = window.IPUtils = (function() {
+
+const CRLF = '\r\n';
+
+var IPUtils = {
+  getAddresses: function(callback) {
+    if (typeof callback !== 'function') {
+      console.warn('No callback provided');
+      return;
+    }
+
+    var addresses = {
+      '0.0.0.0': true
+    };
+
+    var rtc = new mozRTCPeerConnection({ iceServers: [] });
+    rtc.createDataChannel('', { reliable: false });
+
+    rtc.onicecandidate = function(evt) {
+      if (evt.candidate) {
+        parseSDP('a=' + evt.candidate.candidate);
+      }
+    };
+
+    rtc.createOffer((description) => {
+      parseSDP(description.sdp);
+      rtc.setLocalDescription(description, noop, noop);
+    }, (error) => {
+      console.warn('Unable to create offer', error);
+    });
+
+    function addAddress(address) {
+      if (addresses[address]) {
+        return;
+      }
+
+      addresses[address] = true;
+      callback(address);
+    }
+
+    function parseSDP(sdp) {
+      sdp.split(CRLF).forEach((line) => {
+        var parts = line.split(' ');
+
+        if (line.indexOf('a=candidate') !== -1) {
+          if (parts[7] === 'host') {
+            addAddress(parts[4]);
+          }
+        }
+
+        else if (line.indexOf('c=') !== -1) {
+          addAddress(parts[2]);
+        }
+      });
+    }
+  }
+};
+
+function noop() {}
+
+return IPUtils;
+
+})();
+
+},{}],7:[function(require,module,exports){
 /*jshint esnext:true*/
 /*exported Listenable*/
 'use strict';
