@@ -33,7 +33,7 @@ window.addEventListener('load', function() {
 
   var peers = document.getElementById('peers');
 
-  function updatePeers() {
+  window.updatePeers = function updatePeers() {
     var request = wifiP2pManager.getPeerList();
     request.onsuccess = function() {
       var peerList = request.result;
@@ -67,15 +67,17 @@ window.addEventListener('load', function() {
   });
 
   wifiP2pManager.addEventListener('statuschange', function(evt) {
-    console.log('wifiP2pManager::statuschange', evt);
+    console.log('wifiP2pManager::statuschange', evt, evt.peerAddress);
 
     var groupOwner = wifiP2pManager.groupOwner;
     if (!groupOwner) {
       console.warn('No group owner available');
+      alert('No group owner available');
       return;
     }
 
     console.log(groupOwner);
+    alert(JSON.stringify(groupOwner));
   });
 
   wifiP2pManager.addEventListener('peerinfoupdate', function(evt) {
@@ -83,6 +85,9 @@ window.addEventListener('load', function() {
 
     updatePeers();
   });
+
+  // Set the WPS method.
+  wifiManager.wps({ method: 'pbc' });
 
   // Set the device name that will be shown to nearby peers.
   var deviceName = 'P2P Web Server ' + wifiManager.macAddress;
@@ -94,39 +99,39 @@ window.addEventListener('load', function() {
   // Update the list of nearby peers.
   updatePeers();
 
-  // navigator.mozSetMessageHandler('wifip2p-pairing-request', function(evt) {
-  //   var accepted = true;
-  //   var pin = ''; // Optional
+  navigator.mozSetMessageHandler('wifip2p-pairing-request', function(evt) {
+    var accepted = true;
+    var pin = ''; // optional
 
-  //   wifiP2pManager.setPairingConfirmation(accepted, pin);
-  // });
+    wifiP2pManager.setPairingConfirmation(accepted, pin);
+  });
 
-  // var home   = document.getElementById('home');
-  // var remote = document.getElementById('remote');
-  // var frame  = document.getElementById('frame');
+  var home   = document.getElementById('home');
+  var remote = document.getElementById('remote');
+  var frame  = document.getElementById('frame');
 
-  // window.addEventListener('hashchange', function(evt) {
-  //   var address = window.location.hash.substring(1);
-  //   if (!address) {
-  //     home.style.display = 'block';
-  //     remote.style.display = 'none';
+  window.addEventListener('hashchange', function(evt) {
+    var address = window.location.hash.substring(1);
+    if (!address) {
+      home.style.display = 'block';
+      remote.style.display = 'none';
 
-  //     frame.src = '';
-  //     return;
-  //   }
+      frame.src = '';
+      return;
+    }
 
-  //   home.style.display = 'none';
-  //   remote.style.display = 'block';
+    home.style.display = 'none';
+    remote.style.display = 'block';
 
-  //   var wpsMethod = 'pbc';
-  //   var goIntent = 1;
+    var wpsMethod = 'pbc';
+    var goIntent = 1;
 
-  //   console.log('Attempting to connect to address ' + address + ' ' +
-  //               'with WPS method "' + wpsMethod + '" ' +
-  //               'and intent "' + intent + '"');
+    console.log('Attempting to connect to address ' + address + ' ' +
+                'with WPS method "' + wpsMethod + '" ' +
+                'and intent "' + goIntent + '"');
 
-  //   wifiP2pManager.connect(address, wpsMethod, goIntent);
-  // });
+    wifiP2pManager.connect(address, wpsMethod, goIntent);
+  });
 
   var status = document.getElementById('status');
   var start  = document.getElementById('start');
@@ -141,6 +146,14 @@ window.addEventListener('load', function() {
     httpServer.stop();
     status.textContent = 'Stopped';
   });
+});
+
+window.addEventListener('visibilitychange', function(evt) {
+  navigator.mozWifiP2pManager.setScanEnabled(false);
+
+  setTimeout(function() {
+    navigator.mozWifiP2pManager.setScanEnabled(true);
+  }, 5000);
 });
 
 window.addEventListener('beforeunload', function() {
