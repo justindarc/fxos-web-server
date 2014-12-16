@@ -4,7 +4,7 @@ httpServer.addEventListener('request', function(evt) {
   var request  = evt.request;
   var response = evt.response;
 
-  var message = document.getElementById('message').textContent;
+  var message = document.getElementById('message').value;
 
   var body =
 `<!DOCTYPE html>
@@ -67,6 +67,12 @@ window.addEventListener('load', function() {
   var home   = document.getElementById('home');
   var remote = document.getElementById('remote');
   var frame  = document.getElementById('frame');
+  var reload = document.getElementById('reload');
+
+  reload.addEventListener('click', function(evt) {
+    evt.preventDefault();
+    frame.reload();
+  });
 
   window.addEventListener('hashchange', function(evt) {
     var address = window.location.hash.substring(1);

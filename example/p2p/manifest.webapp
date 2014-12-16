@@ -16,7 +16,8 @@
   "type": "certified",
   "permissions": {
     "tcp-socket": {},
-    "wifi-manage": {}
+    "wifi-manage": {},
+    "browser": {}
   },
   "installs_allowed_from": [
     "*"
