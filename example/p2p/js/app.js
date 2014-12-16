@@ -50,12 +50,20 @@ window.addEventListener('load', function() {
     });
   });
 
+  var reloadInterval;
+
   P2PHelper.addEventListener('connected', function(evt) {
     frame.src = 'http://' + evt.groupOwner.ipAddress + ':8080';
+
+    reloadInterval = setInterval(function() {
+      frame.reload();
+    }, 1000);
   });
 
   P2PHelper.addEventListener('disconnected', function(evt) {
     frame.src = '';
+
+    clearInterval(reloadInterval);
   });
 
   // Set the device name that will be shown to nearby peers.
@@ -67,12 +75,6 @@ window.addEventListener('load', function() {
   var home   = document.getElementById('home');
   var remote = document.getElementById('remote');
   var frame  = document.getElementById('frame');
-  var reload = document.getElementById('reload');
-
-  reload.addEventListener('click', function(evt) {
-    evt.preventDefault();
-    frame.reload();
-  });
 
   window.addEventListener('hashchange', function(evt) {
     var address = window.location.hash.substring(1);
