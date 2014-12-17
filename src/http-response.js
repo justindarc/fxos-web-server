@@ -41,9 +41,20 @@ HTTPResponse.prototype.send = function(body, status) {
   this.emit('complete');
 };
 
-HTTPResponse.prototype.sendFile = function(path, status) {
+HTTPResponse.prototype.sendFile = function(fileOrPath, status) {
+  if (fileOrPath instanceof File) {
+    var fileReader = new FileReader();
+    fileReader.onload = () => {
+      var body = BinaryUtils.arrayBufferToString(fileReader.result);
+      this.send(body, status);
+    };
+
+    fileReader.readAsArrayBuffer(fileOrPath);
+    return;
+  }
+
   var xhr = new XMLHttpRequest();
-  xhr.open('GET', path, true);
+  xhr.open('GET', fileOrPath, true);
   xhr.responseType = 'arraybuffer';
   xhr.onload = () => {
     var body = BinaryUtils.arrayBufferToString(xhr.response);

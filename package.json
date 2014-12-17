@@ -1,6 +1,6 @@
 {
   "name": "fxos-web-server",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "homepage": "https://github.com/justindarc/fxos-web-server",
   "license": "MIT",
   "main": "dist/fxos-web-server.js",
@@ -18,7 +18,7 @@
   },
   "scripts": {
     "test": "./node_modules/karma/bin/karma start test/karma.conf.js --single-run",
-    "build": "mkdir -p dist && ./node_modules/.bin/browserify src/http-server.js --outfile dist/fxos-web-server.js --standalone HTTPServer && mkdir -p example/simple/lib && cp -rf dist/fxos-web-server.js example/simple/lib/fxos-web-server.js && mkdir -p example/p2p/lib && cp -rf dist/fxos-web-server.js example/p2p/lib/fxos-web-server.js",
+    "build": "mkdir -p dist && ./node_modules/.bin/browserify src/http-server.js --outfile dist/fxos-web-server.js --standalone HTTPServer && mkdir -p example/simple/lib && cp -rf dist/fxos-web-server.js example/simple/lib/fxos-web-server.js && mkdir -p example/p2p/lib && cp -rf dist/fxos-web-server.js example/p2p/lib/fxos-web-server.js && mkdir -p example/directory/lib && cp -rf dist/fxos-web-server.js example/directory/lib/fxos-web-server.js",
     "clean": "rm -rf dist/fxos-web-server.js && rm -rf example/lib/fxos-web-server.js"
   },
   "repository": {

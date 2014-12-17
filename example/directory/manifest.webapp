@@ -1,0 +1,26 @@
+{
+  "version": "0.0.1",
+  "name": "Directory Web Server",
+  "description": "A directory HTTP server for Firefox OS",
+  "launch_path": "/index.html",
+  "icons": {
+    "16": "/img/icons/icon16x16.png",
+    "48": "/img/icons/icon48x48.png",
+    "60": "/img/icons/icon60x60.png",
+    "128": "/img/icons/icon128x128.png"
+  },
+  "developer": {
+    "name": "Justin D'Arcangelo",
+    "url": "https://github.com/justindarc"
+  },
+  "type": "privileged",
+  "permissions": {
+    "tcp-socket": {},
+    "device-storage:sdcard": { "access": "readonly" }
+  },
+  "installs_allowed_from": [
+    "*"
+  ],
+  "locales": {},
+  "default_locale": "en"
+}
