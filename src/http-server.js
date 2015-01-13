@@ -45,20 +45,20 @@ HTTPServer.prototype.start = function() {
   });
 
   socket.onconnect = (connectEvent) => {
-    connectEvent.ondata = (dataEvent) => {
-      var request = new HTTPRequest(dataEvent.data);
-      if (request.invalid) {
-        connectEvent.close();
-        return;
-      }
-
+    var request = new HTTPRequest(connectEvent);
+    
+    request.addEventListener('complete', () => {
       var response = new HTTPResponse(connectEvent, this.timeout);
 
       this.dispatchEvent('request', {
         request: request,
         response: response
       });
-    };
+    });
+
+    request.addEventListener('error', () => {
+      console.warn('Invalid request received');
+    });
   };
 
   this.socket = socket;

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Upload Web Server</title>
+  <meta name="description" content="An HTTP server file upload example for Firefox OS">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <section>
+    <h1>Upload Web Server</h1>
+    <h3>Status: <span id="status">Stopped</span></h3>
+    <p>IP Address: <span id="ip"></span></p>
+    <p>Port: <span id="port"></span></p>
+    <button type="button" id="start">Start</button>
+    <button type="button" id="stop">Stop</button>
+    <h3>File Upload</h3>
+    <img id="image">
+  </section>
+
+  <script src="lib/fxos-web-server.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

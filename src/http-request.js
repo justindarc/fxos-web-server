@@ -9,30 +9,72 @@ var BinaryUtils = require('./binary-utils');
 
 const CRLF = '\r\n';
 
-function HTTPRequest(requestData) {
-  var parsed = parseRequestData(requestData);
-  if (!parsed) {
-    this.invalid = true;
-    return;
-  }
+function HTTPRequest(socket) {
+  var parts = [];
+  var receivedLength = 0;
 
-  for (var property in parsed) {
-    this[property] = parsed[property];
-  }
+  var checkRequestComplete = () => {
+    var contentLength = parseInt(this.headers['Content-Length'], 10);
+    if (isNaN(contentLength)) {
+      this.complete = true;
+      this.dispatchEvent('complete', this);
+      return;
+    }
+
+    if (receivedLength < contentLength) {
+      return;
+    }
+
+    BinaryUtils.mergeArrayBuffers(parts, (data) => {
+      this.body = parseBody(this.headers['Content-Type'], data);
+      this.complete = true;
+      this.dispatchEvent('complete', this);
+    });
+
+    socket.ondata = null;
+  };
+
+  socket.ondata = (event) => {
+    var data = event.data;
+
+    if (parts.length > 0) {
+      parts.push(data);
+      receivedLength += data.byteLength;
+      checkRequestComplete();
+      return;
+    }
+
+    var firstPart = parseHeader(this, data);
+    if (this.invalid) {
+      this.dispatchEvent('error', this);
+
+      socket.close();
+      socket.ondata = null;
+      return;
+    }
+
+    if (firstPart) {
+      parts.push(firstPart);
+      receivedLength += firstPart.byteLength;
+    }
+
+    checkRequestComplete();
+  };
 }
 
 HTTPRequest.prototype = new EventTarget();
 
 HTTPRequest.prototype.constructor = HTTPRequest;
 
-function parseRequestData(requestData) {
-  if (!requestData) {
+function parseHeader(request, data) {
+  if (!data) {
+    request.invalid = true;
     return null;
   }
 
-  requestData = BinaryUtils.arrayBufferToString(requestData);
+  data = BinaryUtils.arrayBufferToString(data);
 
-  var requestParts = requestData.split(CRLF + CRLF);
+  var requestParts = data.split(CRLF + CRLF);
 
   var header = requestParts.shift();
   var body   = requestParts.join(CRLF + CRLF);
@@ -45,6 +87,7 @@ function parseRequestData(requestData) {
   var version = requestLine[2];
 
   if (version !== HTTPServer.HTTP_VERSION) {
+    request.invalid = true;
     return null;
   }
 
@@ -66,18 +109,17 @@ function parseRequestData(requestData) {
     headers[name] = value;
   });
 
-  var request = {
-    method:  method,
-    path:    path,
-    params:  params,
-    headers: headers
-  };
+  request.method  = method;
+  request.path    = path;
+  request.params  = params;
+  request.headers = headers;
 
   if (headers['Content-Length']) {
-    request.body = parseBody(headers['Content-Type'], body);
+    // request.body = parseBody(headers['Content-Type'], body);
+    return BinaryUtils.stringToArrayBuffer(body);
   }
 
-  return request;
+  return null;
 }
 
 function setOrAppendValue(object, name, value) {
@@ -159,11 +201,13 @@ function parseMultipartFormDataString(string, boundary) {
   return values;
 }
 
-function parseBody(contentType, body) {
+function parseBody(contentType, data) {
   contentType = contentType || 'text/plain';
 
   var contentTypeParams = contentType.replace(/\s/g, '').split(';');
   var mimeType = contentTypeParams.shift();
+
+  var body = BinaryUtils.arrayBufferToString(data);
 
   var result;
 

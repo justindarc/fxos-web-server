@@ -17,7 +17,14 @@ var BinaryUtils = {
   },
 
   arrayBufferToString: function(arrayBuffer) {
-    return String.fromCharCode.apply(null, new Uint8Array(arrayBuffer));
+    var results = [];
+    var uint8Array = new Uint8Array(arrayBuffer);
+
+    for (var i = 0, length = uint8Array.length; i < length; i += 200000) {
+      results.push(String.fromCharCode.apply(null, uint8Array.subarray(i, i + 200000)));
+    }
+
+    return results.join('');
   },
 
   blobToArrayBuffer: function(blob, callback) {
@@ -30,6 +37,10 @@ var BinaryUtils = {
     fileReader.readAsArrayBuffer(blob);
 
     return fileReader.result;
+  },
+
+  mergeArrayBuffers: function(arrayBuffers, callback) {
+    return BinaryUtils.blobToArrayBuffer(new Blob(arrayBuffers), callback);
   }
 };
 
