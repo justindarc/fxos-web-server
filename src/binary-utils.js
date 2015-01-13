@@ -18,6 +18,18 @@ var BinaryUtils = {
 
   arrayBufferToString: function(arrayBuffer) {
     return String.fromCharCode.apply(null, new Uint8Array(arrayBuffer));
+  },
+
+  blobToArrayBuffer: function(blob, callback) {
+    var fileReader = new FileReader();
+    fileReader.onload = function() {
+      if (typeof callback === 'function') {
+        callback(fileReader.result);
+      }
+    };
+    fileReader.readAsArrayBuffer(blob);
+
+    return fileReader.result;
   }
 };
 

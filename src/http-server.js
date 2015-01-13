@@ -41,7 +41,7 @@ HTTPServer.prototype.start = function() {
   console.log('Starting HTTP server on port ' + this.port);
 
   var socket = navigator.mozTCPSocket.listen(this.port, {
-    binaryType: 'string' // 'arraybuffer'
+    binaryType: 'arraybuffer'
   });
 
   socket.onconnect = (connectEvent) => {

@@ -19,6 +19,18 @@ var BinaryUtils = {
 
   arrayBufferToString: function(arrayBuffer) {
     return String.fromCharCode.apply(null, new Uint8Array(arrayBuffer));
+  },
+
+  blobToArrayBuffer: function(blob, callback) {
+    var fileReader = new FileReader();
+    fileReader.onload = function() {
+      if (typeof callback === 'function') {
+        callback(fileReader.result);
+      }
+    };
+    fileReader.readAsArrayBuffer(blob);
+
+    return fileReader.result;
   }
 };
 
@@ -55,13 +67,11 @@ Listenable(HTTPRequest.prototype);
 HTTPRequest.prototype.constructor = HTTPRequest;
 
 function parseRequestData(requestData) {
-  if (requestData instanceof ArrayBuffer) {
-    requestData = BinaryUtils.arrayBufferToString(requestData);
-  }
-
   if (!requestData) {
     return null;
   }
+
+  requestData = BinaryUtils.arrayBufferToString(requestData);
 
   var requestParts = requestData.split(CRLF + CRLF);
 
@@ -268,26 +278,21 @@ Listenable(HTTPResponse.prototype);
 HTTPResponse.prototype.constructor = HTTPResponse;
 
 HTTPResponse.prototype.send = function(body, status) {
-  var response = createResponse(body, status, this.headers);
-  if (this.socket.binaryType === 'arraybuffer') {
-    response = BinaryUtils.stringToArrayBuffer(response);
-  }
+  return createResponse(body, status, this.headers, (response) => {
+    this.socket.send(response, 0, response.byteLength);
+    this.socket.close();
 
-  this.socket.send(response);
-
-  clearTimeout(this.timeoutHandler);
-  this.emit('complete');
+    clearTimeout(this.timeoutHandler);
+    this.emit('complete');
+  });
 };
 
 HTTPResponse.prototype.sendFile = function(fileOrPath, status) {
   if (fileOrPath instanceof File) {
-    var fileReader = new FileReader();
-    fileReader.onload = () => {
-      var body = BinaryUtils.arrayBufferToString(fileReader.result);
-      this.send(body, status);
-    };
+    BinaryUtils.blobToArrayBuffer(fileOrPath, (arrayBuffer) => {
+      this.send(arrayBuffer, status);
+    });
 
-    fileReader.readAsArrayBuffer(fileOrPath);
     return;
   }
 
@@ -295,8 +300,7 @@ HTTPResponse.prototype.sendFile = function(fileOrPath, status) {
   xhr.open('GET', fileOrPath, true);
   xhr.responseType = 'arraybuffer';
   xhr.onload = () => {
-    var body = BinaryUtils.arrayBufferToString(xhr.response);
-    this.send(body, status);
+    this.send(xhr.response, status);
   };
 
   xhr.send(null);
@@ -312,14 +316,20 @@ function createResponseHeader(status, headers) {
   return header;
 }
 
-function createResponse(body, status, headers) {
+function createResponse(body, status, headers, callback) {
   body    = body    || '';
   status  = status  || 200;
   headers = headers || {};
 
-  headers['Content-Length'] = body.length;
+  headers['Content-Length'] = body.length || body.byteLength;
 
-  return createResponseHeader(status, headers) + CRLF + body;
+  var response = new Blob([
+    createResponseHeader(status, headers),
+    CRLF,
+    body
+  ]);
+
+  return BinaryUtils.blobToArrayBuffer(response, callback);
 }
 
 return HTTPResponse;
@@ -370,7 +380,7 @@ HTTPServer.prototype.start = function() {
   console.log('Starting HTTP server on port ' + this.port);
 
   var socket = navigator.mozTCPSocket.listen(this.port, {
-    binaryType: 'string' // 'arraybuffer'
+    binaryType: 'arraybuffer'
   });
 
   socket.onconnect = (connectEvent) => {

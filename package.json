@@ -1,6 +1,6 @@
 {
   "name": "fxos-web-server",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "homepage": "https://github.com/justindarc/fxos-web-server",
   "license": "MIT",
   "main": "dist/fxos-web-server.js",

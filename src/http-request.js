@@ -26,13 +26,11 @@ Listenable(HTTPRequest.prototype);
 HTTPRequest.prototype.constructor = HTTPRequest;
 
 function parseRequestData(requestData) {
-  if (requestData instanceof ArrayBuffer) {
-    requestData = BinaryUtils.arrayBufferToString(requestData);
-  }
-
   if (!requestData) {
     return null;
   }
+
+  requestData = BinaryUtils.arrayBufferToString(requestData);
 
   var requestParts = requestData.split(CRLF + CRLF);
 
