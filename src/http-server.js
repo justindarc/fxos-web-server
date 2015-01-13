@@ -4,7 +4,7 @@
 
 module.exports = window.HTTPServer = (function() {
 
-var Listenable   = require('./listenable');
+var EventTarget  = require('./event-target');
 var HTTPRequest  = require('./http-request');
 var HTTPResponse = require('./http-response');
 var IPUtils      = require('./ip-utils');
@@ -27,7 +27,7 @@ function HTTPServer(port, options) {
 
 HTTPServer.HTTP_VERSION = 'HTTP/1.1';
 
-Listenable(HTTPServer.prototype);
+HTTPServer.prototype = new EventTarget();
 
 HTTPServer.prototype.constructor = HTTPServer;
 
@@ -54,7 +54,7 @@ HTTPServer.prototype.start = function() {
 
       var response = new HTTPResponse(connectEvent, this.timeout);
 
-      this.emit('request', {
+      this.dispatchEvent('request', {
         request: request,
         response: response
       });

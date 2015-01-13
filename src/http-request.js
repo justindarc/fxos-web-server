@@ -4,7 +4,7 @@
 
 module.exports = window.HTTPRequest = (function() {
 
-var Listenable  = require('./listenable');
+var EventTarget = require('./event-target');
 var BinaryUtils = require('./binary-utils');
 
 const CRLF = '\r\n';
@@ -21,7 +21,7 @@ function HTTPRequest(requestData) {
   }
 }
 
-Listenable(HTTPRequest.prototype);
+HTTPRequest.prototype = new EventTarget();
 
 HTTPRequest.prototype.constructor = HTTPRequest;
 

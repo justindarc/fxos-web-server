@@ -40,12 +40,64 @@ return BinaryUtils;
 
 },{}],2:[function(require,module,exports){
 /*jshint esnext:true*/
+/*exported EventTarget*/
+'use strict';
+
+module.exports = window.EventTarget = (function() {
+
+function EventTarget(object) {
+  if (typeof object !== 'object') {
+    return;
+  }
+
+  for (var property in object) {
+    this[property] = object[property];
+  }
+}
+
+EventTarget.prototype.constructor = EventTarget;
+
+EventTarget.prototype.dispatchEvent = function(name, data) {
+  var events    = this._events || {};
+  var listeners = events[name] || [];
+  listeners.forEach((listener) => {
+    listener.call(this, data);
+  });
+};
+
+EventTarget.prototype.addEventListener = function(name, listener) {
+  var events    = this._events = this._events || {};
+  var listeners = events[name] = events[name] || [];
+  if (listeners.find(fn => fn === listener)) {
+    return;
+  }
+
+  listeners.push(listener);
+};
+
+EventTarget.prototype.removeEventListener = function(name, listener) {
+  var events    = this._events || {};
+  var listeners = events[name] || [];
+  for (var i = listeners.length - 1; i >= 0; i--) {
+    if (listeners[i] === listener) {
+      listeners.splice(i, 1);
+      return;
+    }
+  }
+};
+
+return EventTarget;
+
+})();
+
+},{}],3:[function(require,module,exports){
+/*jshint esnext:true*/
 /*exported HTTPRequest*/
 'use strict';
 
 module.exports = window.HTTPRequest = (function() {
 
-var Listenable  = require('./listenable');
+var EventTarget = require('./event-target');
 var BinaryUtils = require('./binary-utils');
 
 const CRLF = '\r\n';
@@ -62,7 +114,7 @@ function HTTPRequest(requestData) {
   }
 }
 
-Listenable(HTTPRequest.prototype);
+HTTPRequest.prototype = new EventTarget();
 
 HTTPRequest.prototype.constructor = HTTPRequest;
 
@@ -245,14 +297,14 @@ return HTTPRequest;
 
 })();
 
-},{"./binary-utils":1,"./listenable":7}],3:[function(require,module,exports){
+},{"./binary-utils":1,"./event-target":2}],4:[function(require,module,exports){
 /*jshint esnext:true*/
 /*exported HTTPResponse*/
 'use strict';
 
 module.exports = window.HTTPResponse = (function() {
 
-var Listenable  = require('./listenable');
+var EventTarget = require('./event-target');
 var BinaryUtils = require('./binary-utils');
 var HTTPStatus  = require('./http-status');
 
@@ -274,7 +326,7 @@ function HTTPResponse(socket, timeout) {
   }
 }
 
-Listenable(HTTPResponse.prototype);
+HTTPResponse.prototype = new EventTarget();
 
 HTTPResponse.prototype.constructor = HTTPResponse;
 
@@ -301,7 +353,7 @@ HTTPResponse.prototype.send = function(body, status) {
         clearTimeout(this.timeoutHandler);
 
         this.socket.close();
-        this.emit('complete');
+        this.dispatchEvent('complete');
       }
     };
 
@@ -360,14 +412,14 @@ return HTTPResponse;
 
 })();
 
-},{"./binary-utils":1,"./http-status":5,"./listenable":7}],4:[function(require,module,exports){
+},{"./binary-utils":1,"./event-target":2,"./http-status":6}],5:[function(require,module,exports){
 /*jshint esnext:true*/
 /*exported HTTPServer*/
 'use strict';
 
 module.exports = window.HTTPServer = (function() {
 
-var Listenable   = require('./listenable');
+var EventTarget  = require('./event-target');
 var HTTPRequest  = require('./http-request');
 var HTTPResponse = require('./http-response');
 var IPUtils      = require('./ip-utils');
@@ -390,7 +442,7 @@ function HTTPServer(port, options) {
 
 HTTPServer.HTTP_VERSION = 'HTTP/1.1';
 
-Listenable(HTTPServer.prototype);
+HTTPServer.prototype = new EventTarget();
 
 HTTPServer.prototype.constructor = HTTPServer;
 
@@ -417,7 +469,7 @@ HTTPServer.prototype.start = function() {
 
       var response = new HTTPResponse(connectEvent, this.timeout);
 
-      this.emit('request', {
+      this.dispatchEvent('request', {
         request: request,
         response: response
       });
@@ -444,7 +496,7 @@ return HTTPServer;
 
 })();
 
-},{"./http-request":2,"./http-response":3,"./ip-utils":6,"./listenable":7}],5:[function(require,module,exports){
+},{"./event-target":2,"./http-request":3,"./http-response":4,"./ip-utils":7}],6:[function(require,module,exports){
 /*jshint esnext:true*/
 /*exported HTTPStatus*/
 'use strict';
@@ -516,7 +568,7 @@ return HTTPStatus;
 
 })();
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 /*jshint esnext:true*/
 /*exported IPUtils*/
 'use strict';
@@ -585,47 +637,5 @@ return IPUtils;
 
 })();
 
-},{}],7:[function(require,module,exports){
-/*jshint esnext:true*/
-/*exported Listenable*/
-'use strict';
-
-module.exports = window.Listenable = (function() {
-
-function Listenable(object) {
-  object.emit = function(name, data) {
-    var events    = this._events || {};
-    var listeners = events[name] || [];
-    listeners.forEach((listener) => {
-      listener.call(this, data);
-    });
-  };
-
-  object.addEventListener = function(name, listener) {
-    var events    = this._events = this._events || {};
-    var listeners = events[name] = events[name] || [];
-    if (listeners.find(fn => fn === listener)) {
-      return;
-    }
-
-    listeners.push(listener);
-  };
-
-  object.removeEventListener = function(name, listener) {
-    var events    = this._events || {};
-    var listeners = events[name] || [];
-    for (var i = listeners.length - 1; i >= 0; i--) {
-      if (listeners[i] === listener) {
-        listeners.splice(i, 1);
-        return;
-      }
-    }
-  };
-}
-
-return Listenable;
-
-})();
-
-},{}]},{},[4])(4)
+},{}]},{},[5])(5)
 });

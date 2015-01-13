@@ -4,7 +4,7 @@
 
 module.exports = window.HTTPResponse = (function() {
 
-var Listenable  = require('./listenable');
+var EventTarget = require('./event-target');
 var BinaryUtils = require('./binary-utils');
 var HTTPStatus  = require('./http-status');
 
@@ -26,7 +26,7 @@ function HTTPResponse(socket, timeout) {
   }
 }
 
-Listenable(HTTPResponse.prototype);
+HTTPResponse.prototype = new EventTarget();
 
 HTTPResponse.prototype.constructor = HTTPResponse;
 
@@ -53,7 +53,7 @@ HTTPResponse.prototype.send = function(body, status) {
         clearTimeout(this.timeoutHandler);
 
         this.socket.close();
-        this.emit('complete');
+        this.dispatchEvent('complete');
       }
     };
 
