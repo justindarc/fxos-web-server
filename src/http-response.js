@@ -9,6 +9,7 @@ var BinaryUtils = require('./binary-utils');
 var HTTPStatus  = require('./http-status');
 
 const CRLF = '\r\n';
+const BUFFER_SIZE = 64 * 1024;
 
 function HTTPResponse(socket, timeout) {
   this.socket  = socket;
@@ -31,11 +32,34 @@ HTTPResponse.prototype.constructor = HTTPResponse;
 
 HTTPResponse.prototype.send = function(body, status) {
   return createResponse(body, status, this.headers, (response) => {
-    this.socket.send(response, 0, response.byteLength);
-    this.socket.close();
+    var offset = 0;
+    var remaining = response.byteLength;
 
-    clearTimeout(this.timeoutHandler);
-    this.emit('complete');
+    var sendNextPart = () => {
+      var length = Math.min(remaining, BUFFER_SIZE);
+
+      var bufferFull = this.socket.send(response, offset, length);
+
+      offset += length;
+      remaining -= length;
+
+      if (remaining > 0) {
+        if (!bufferFull) {
+          sendNextPart();
+        }
+      }
+      
+      else {
+        clearTimeout(this.timeoutHandler);
+
+        this.socket.close();
+        this.emit('complete');
+      }
+    };
+
+    this.socket.ondrain = sendNextPart;
+
+    sendNextPart();
   });
 };
 
