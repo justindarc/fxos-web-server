@@ -8,7 +8,7 @@ httpServer.addEventListener('request', function(evt) {
 
   var image = document.getElementById('image');
 
-  var file = request.body && request.body.file;
+  var file = request.body && request.body.file && request.body.file.value;
   if (file) {
     file = BinaryUtils.stringToArrayBuffer(file);
     image.src = URL.createObjectURL(new Blob([file]));
@@ -27,6 +27,10 @@ httpServer.addEventListener('request', function(evt) {
     <p>
       <label>File:</label>
       <input type="file" name="file">
+    </p>
+    <p>
+      <label>Description:</label>
+      <textarea name="description"></textarea>
     </p>
     <input type="submit" value="Submit">
   </form>

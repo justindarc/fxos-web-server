@@ -167,30 +167,44 @@ function parseMultipartFormDataString(string, boundary) {
     var parts = data.split(CRLF + CRLF);
     
     var header = parts.shift();
-    var value  = parts.join(CRLF + CRLF);
-
-    var headerParams = header.split(';');
-    var headerParts = headerParams.shift().split(': ');
-
-    var headerName  = headerParts[0];
-    var headerValue = headerParts[1];
-
-    if (headerName  !== 'Content-Disposition' ||
-        headerValue !== 'form-data') {
-      return;
-    }
+    var value  = {
+      headers: {},
+      metadata: {},
+      value: parts.join(CRLF + CRLF)
+    };
 
     var name;
 
-    headerParams.forEach((param) => {
-      var paramParts = param.trim().split('=');
+    var headers = header.split(CRLF);
+    headers.forEach((header) => {
+      var headerParams = header.split(';');
+      var headerParts = headerParams.shift().split(': ');
 
-      var paramName  = paramParts[0];
-      var paramValue = paramParts[1];
+      var headerName  = headerParts[0];
+      var headerValue = headerParts[1];
 
-      if (paramName === 'name') {
-        name = paramValue.replace(/\"(.*?)\"/, '$1') || paramValue;
+      if (headerName  !== 'Content-Disposition' ||
+          headerValue !== 'form-data') {
+        value.headers[headerName] = headerValue;
+        return;
       }
+
+      headerParams.forEach((param) => {
+        var paramParts = param.trim().split('=');
+
+        var paramName  = paramParts[0];
+        var paramValue = paramParts[1];
+
+        paramValue = paramValue.replace(/\"(.*?)\"/, '$1') || paramValue;
+
+        if (paramName === 'name') {
+          name = paramValue;
+        }
+
+        else {
+          value.metadata[paramName] = paramValue;
+        }
+      });
     });
 
     if (name) {
