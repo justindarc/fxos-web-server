@@ -52,7 +52,8 @@ HTTPServer.prototype.start = function() {
 
       this.dispatchEvent('request', {
         request: request,
-        response: response
+        response: response,
+        socket: connectEvent
       });
     });
 
