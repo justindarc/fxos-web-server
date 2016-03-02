@@ -17,7 +17,10 @@ var IPUtils = {
       '0.0.0.0': true
     };
 
-    var rtc = new mozRTCPeerConnection({ iceServers: [] });
+    var RTCPeerConnection = window.RTCPeerConnection ||
+                            window.mozRTCPeerConnection;
+
+    var rtc = new RTCPeerConnection({ iceServers: [] });
     rtc.createDataChannel('', { reliable: false });
 
     rtc.onicecandidate = function(evt) {

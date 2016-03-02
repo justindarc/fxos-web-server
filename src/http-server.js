@@ -45,15 +45,16 @@ HTTPServer.prototype.start = function() {
   });
 
   socket.onconnect = (connectEvent) => {
-    var request = new HTTPRequest(connectEvent);
+    var socket = connectEvent.socket || connectEvent;
+    var request = new HTTPRequest(socket);
     
     request.addEventListener('complete', () => {
-      var response = new HTTPResponse(connectEvent, this.timeout);
+      var response = new HTTPResponse(socket, this.timeout);
 
       this.dispatchEvent('request', {
         request: request,
         response: response,
-        socket: connectEvent
+        socket: socket
       });
     });
 

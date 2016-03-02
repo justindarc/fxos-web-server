@@ -529,15 +529,16 @@ HTTPServer.prototype.start = function() {
   });
 
   socket.onconnect = (connectEvent) => {
-    var request = new HTTPRequest(connectEvent);
+    var socket = connectEvent.socket || connectEvent;
+    var request = new HTTPRequest(socket);
     
     request.addEventListener('complete', () => {
-      var response = new HTTPResponse(connectEvent, this.timeout);
+      var response = new HTTPResponse(socket, this.timeout);
 
       this.dispatchEvent('request', {
         request: request,
         response: response,
-        socket: connectEvent
+        socket: socket
       });
     });
 
@@ -658,7 +659,10 @@ var IPUtils = {
       '0.0.0.0': true
     };
 
-    var rtc = new mozRTCPeerConnection({ iceServers: [] });
+    var RTCPeerConnection = window.RTCPeerConnection ||
+                            window.mozRTCPeerConnection;
+
+    var rtc = new RTCPeerConnection({ iceServers: [] });
     rtc.createDataChannel('', { reliable: false });
 
     rtc.onicecandidate = function(evt) {
